@@ -2,6 +2,7 @@ const request = require("superagent");
 const cheerio = require("cheerio");
 
 const db = require("./database.js");
+const send = require("./email.js");
 
 const url = "http://skjolaas.com/";
 
@@ -15,15 +16,8 @@ setInterval(repeatGetNumber, 10000);
 function getStandardCatsNumber() {
 	getCatNumber(url + "availablestandardkittens.html")
 		.then(curNum => {
-			console.log(`They have ${curNum} standard cats now`);
 			const prevNum = db.getStandard();
-			if(curNum > prevNum) {
-				console.log("new standard cat!!!");
-				db.setNumber("standard", curNum);
-				if(prevNum !== -1) {
-					// sendEmail
-				}
-			}
+			checkUpdate(curNum, prevNum, "standard")
 		});
 }
 
@@ -36,15 +30,8 @@ function getNonStandardCatsNumber() {
 	// A request object
 	getCatNumber(url + "nonstandardkittens.html")
 		.then(curNum => {
-			console.log(`They have ${curNum} non standard cats now`);
 			const prevNum = db.getNonstandard();
-			if(curNum > prevNum) {
-				console.log("new nonstand cat!!!");
-				db.setNumber("nonstandard", curNum);
-				if(prevNum !== -1) {
-					// sendEmail
-				} 
-			}
+			checkUpdate(curNum, prevNum, "nonstandard")
 		});
 }
 
@@ -65,6 +52,18 @@ function getCatNumber(url) {
 			return count;
 		});
 	return result;
+}
+
+function checkUpdate(cur, prev, type) {
+	if(cur > prev) {
+		db.setNumber(type, cur);
+		if(prev !== -1) {
+			// sendEmail
+			send(type);
+		} else if(cur < prev) {
+			db.setNumber(type, cur);
+		}
+	}
 }
 
 function repeatGetNumber() {

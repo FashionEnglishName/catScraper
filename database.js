@@ -1,5 +1,5 @@
-let nonstandardNumber = -1;
-let standardNumber = -1;
+let nonstandardNumber = 4;
+let standardNumber = 4;
 
 function setNumber(type, value) {
 	if (type === "nonstandard") {
